@@ -8,16 +8,15 @@ const PORT = process.env.PORT;
 
 
 const app = express();
-app.use(cors()); //what the functionallity of "use"??
+app.use(cors());
 
-app.get('/package-lock',handleLocationrequest)
-app.get('/data/weather',handleWeatherrequest)
+app.get('/',handleLocationrequest)
+app.get('/weather',handleWeatherrequest)
 
 function handleLocationrequest(req, res) {
 
     const searchQuery = req.query.city;
     // console.log(searchQuery);
-
     const locationsRawData = require('./data/location.json');
     const location = new Location(locationsRawData[0]);
     res.send(location);
@@ -25,6 +24,7 @@ function handleLocationrequest(req, res) {
 }
 
 function handleWeatherrequest(req, res) {
+
     const WeatherRawData = require('./data/weather.json');
     const  WeatherData = [];
 
@@ -41,7 +41,6 @@ function Location(data) {
     this.latitude = data.lat;
     this.longitude = data.lon;
 }
-
 
 function Restaurant(data) {
     this.restaurant = data.restaurant.name;
