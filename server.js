@@ -10,12 +10,15 @@ const PORT = process.env.PORT;
 const app = express();
 app.use(cors());
 
-app.get('/',handleLocationrequest)
+app.get('/location',handleLocationrequest)
 app.get('/weather',handleWeatherrequest)
 
 function handleLocationrequest(req, res) {
-
+    
     const searchQuery = req.query.city;
+    if(!searchQuery){
+        res.status(500).send('sorry, some thing went wrong')
+    }
     // console.log(searchQuery);
     const locationsRawData = require('./data/location.json');
     const location = new Location(locationsRawData[0]);
@@ -23,29 +26,31 @@ function handleLocationrequest(req, res) {
 
 }
 
+const  WeatherData = [];
+
 function handleWeatherrequest(req, res) {
 
     const WeatherRawData = require('./data/weather.json');
-    const  WeatherData = [];
-
-    WeatherRawData.nearby_restaurants.forEach(restaurant => {
-        WeatherData.push(new Restaurant(restaurant));
+    
+        WeatherRawData.data.forEach(element => {
+        let weatheobject = new WeatherProp(element.weather.description , element.valid_date)
+        WeatherData.push(weatheobject);
     });
 
     res.send(WeatherData);
-
 }
 
-function Location(data) {
+function Location(city,data) {
+    this.searchQuery = city;
     this.formatted_query = data.display_name;
     this.latitude = data.lat;
     this.longitude = data.lon;
 }
 
-function Restaurant(data) {
-    this.restaurant = data.restaurant.name;
-    this.cuisines = data.restaurant.cuisines;
-    this.locality = data.restaurant.location.locality;
+function WeatherProp(data) {
+    this.situation = data.weather.description ;
+    this.date = data.valid_date;
+
 }
 
 app.use('*', (req, res) => {
