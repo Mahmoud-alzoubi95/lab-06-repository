@@ -26,7 +26,6 @@ function handleLocationrequest(req, res) {
 
 }
 
-
 const  WeatherData = [];
 function handleWeatherrequest(req, res) {
 
