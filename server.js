@@ -26,31 +26,31 @@ function handleLocationrequest(req, res) {
 
 }
 
-const  WeatherData = [];
 
+const  WeatherData = [];
 function handleWeatherrequest(req, res) {
 
     const WeatherRawData = require('./data/weather.json');
     
-        WeatherRawData.data.forEach(element => {
-        let weatheobject = new WeatherProp(element.weather.description , element.valid_date)
+        WeatherRawData.data.forEach(item => {
+        let weatheobject = new WeatherProp(item.weather.description , item.valid_date)
         WeatherData.push(weatheobject);
     });
 
     res.send(WeatherData);
 }
 
-function Location(city,data) {
-    this.searchQuery = city;
+function Location(data ,searchQuery) {
+    this.searchQuery1 =searchQuery;
     this.formatted_query = data.display_name;
     this.latitude = data.lat;
     this.longitude = data.lon;
 }
 
-function WeatherProp(data) {
-    this.situation = data.weather.description ;
-    this.date = data.valid_date;
+function WeatherProp(weatherdescription , valid_date ) {
 
+    this.description = weatherdescription;
+    this.date = valid_date;
 }
 
 app.use('*', (req, res) => {
