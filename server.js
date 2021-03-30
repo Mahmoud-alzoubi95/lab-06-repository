@@ -59,7 +59,7 @@ function handleWeatherrequest(req, res) {
 
 function handleParkrequest(req, res) {
 
-  const parkUrl=`https://developer.nps.gov/api/v1/parks?city=${req.query.city}&api_key=${PARKS_API_KEY}&limit=10`;
+  const parkUrl=`https://developer.nps.gov/api/v1/parks?city=${req.query.searchQuery1}&api_key=${PARKS_API_KEY}&limit=10`;
 
   superagent.get(parkUrl).then(reqData => {
 
