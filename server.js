@@ -29,7 +29,7 @@ function handleLocationrequest(req, res) {
   const city = req.query.city;
 
   let safeValues=`SELECT * FROM locations WHERE search_query=$1`;
-  let location=[city];
+  let sqlQuery=[city];
 
   const url = `https://eu1.locationiq.com/v1/search.php?key=${GEOCODE_API_KEY}&q=${city}&format=json`;
   if (!city) {
@@ -38,12 +38,34 @@ function handleLocationrequest(req, res) {
   // console.log(city);
   // const locationsRawData = require('./data/location.json');
 
-  superagent.get(url).then((resData) => {
+  client.query(sqlQuery,safeValues).then(result=>{
+    if (result.rows.length > 0) {
+      console.log("this result from data base : ")
+      // lat = result.rows.latitude;
+      // lon = result.rows.longitude;
+      res.send(result.rows[0]);
+  }else{
+
+    superagent.get(url).then((resData) => {
       const location = new Location(city, resData.body[0]);
+      let SQL=`INSERT INTO locations(search_query, formatted_query, latitude, longitude)VALUES($1,$2,$3,$4)`;
+        let Values = [location.search_query, location.formatted_query, location.latitude, location.longitude];
+        client.query(SQL, Values).then(result => {
+          console.log(result);
+
+        });
       res.send(location);
     }).catch(() => {
       response.status(404).send("your search not found");
     });
+  }})
+ 
+
+
+
+
+
+ 
 }
 
 // const  WeatherData = [];
@@ -110,6 +132,8 @@ app.use("*", (req, res) => {
   res.send("some thing went wrong");
 });
 
-app.listen(PORT, () => {
-  console.log(`listening on ${PORT}`);
-});
+client.connect().then(() => {
+        app.listen(PORT, () => {
+         console.log(`Listining to PORT: ${PORT}`);
+        })
+    })
