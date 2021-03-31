@@ -4,21 +4,33 @@ require("dotenv").config();
 
 const express = require("express");
 const superagent = require("superagent");
+const pg = require('pg');
 const cors = require("cors");
 const { response } = require("express");
 const PORT = process.env.PORT;
 const GEOCODE_API_KEY = process.env.GEOCODE_API_KEY;
-const WEATHER_API_KEY = process.env.WEATHER_API_KEY;
-const PARKS_API_KEY = process.env.PARKS_API_KEY;
+const DATABASE_URL = process.env.DATABASE_URL;
+// const WEATHER_API_KEY = process.env.WEATHER_API_KEY;
+// const PARKS_API_KEY = process.env.PARKS_API_KEY;
 const app = express();
 app.use(cors());
+
+
 
 app.get("/location", handleLocationrequest);
 app.get("/weather", handleWeatherrequest);
 app.get("/parks", handleParkrequest);
 
+
+const client = new pg.Client(process.env.DATABASE_URL);
+
+
 function handleLocationrequest(req, res) {
   const city = req.query.city;
+
+  let safeValues=`SELECT * FROM locations WHERE search_query=$1`;
+  let location=[city];
+
   const url = `https://eu1.locationiq.com/v1/search.php?key=${GEOCODE_API_KEY}&q=${city}&format=json`;
   if (!city) {
     res.status(500).send("sorry, some thing went wrong");
