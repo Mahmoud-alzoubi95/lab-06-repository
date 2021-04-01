@@ -12,24 +12,32 @@ const GEOCODE_API_KEY = process.env.GEOCODE_API_KEY;
 const DATABASE_URL = process.env.DATABASE_URL;
 const WEATHER_API_KEY = process.env.WEATHER_API_KEY;
 const PARKS_API_KEY = process.env.PARKS_API_KEY;
+const ENV = process.env.ENV || 'DEB';
+
 const app = express();
 app.use(cors());
-
 
 
 app.get("/location", handleLocationrequest);
 // app.get("/weather", handleWeatherrequest);
 // app.get("/parks", handleParkrequest);
+let client ='';
+if(ENV===DIV){
 
+  client = new pg.Client({connectionString: DATABASE_URL})
 
+}else{client = new pg.Client({
+    connectionString: DATABASE_URL,
+    ssl: {rejectUnauthorized: false}
+    })}
 // const client = new pg.Client(DATABASE_URL);
 
-const client = new pg.Client({
-  connectionString: DATABASE_URL,
-  ssl: {
-    rejectUnauthorized: false
-  }
-});
+// const client = new pg.Client({
+//   connectionString: DATABASE_URL,
+//   ssl: {
+//     rejectUnauthorized: false
+//   }
+// });
 
 
 
