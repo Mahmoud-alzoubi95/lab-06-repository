@@ -22,7 +22,7 @@ app.get("/location", handleLocationrequest);
 // app.get("/weather", handleWeatherrequest);
 // app.get("/parks", handleParkrequest);
 let client ='';
-if(ENV===DIV){
+if(ENV==='DIV'){
 
   client = new pg.Client({connectionString: DATABASE_URL})
 
