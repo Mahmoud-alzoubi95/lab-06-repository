@@ -10,28 +10,29 @@ const { response } = require("express");
 const PORT = process.env.PORT;
 const GEOCODE_API_KEY = process.env.GEOCODE_API_KEY;
 const DATABASE_URL = process.env.DATABASE_URL;
-// const WEATHER_API_KEY = process.env.WEATHER_API_KEY;
-// const PARKS_API_KEY = process.env.PARKS_API_KEY;
+const WEATHER_API_KEY = process.env.WEATHER_API_KEY;
+const PARKS_API_KEY = process.env.PARKS_API_KEY;
 const app = express();
 app.use(cors());
 
 
 
 app.get("/location", handleLocationrequest);
-app.get("/weather", handleWeatherrequest);
-app.get("/parks", handleParkrequest);
+// app.get("/weather", handleWeatherrequest);
+// app.get("/parks", handleParkrequest);
 
 
-const client = new pg.Client(process.env.DATABASE_URL);
+const client = new pg.Client(DATABASE_URL);
 
 
 function handleLocationrequest(req, res) {
+
   const city = req.query.city;
 
-  let safeValues=`SELECT * FROM locations WHERE search_query=$1`;
-  let sqlQuery=[city];
-
+  let safeValues=[city];
+  let sqlQuery=`SELECT * FROM locations WHERE search_query=$1;`
   const url = `https://eu1.locationiq.com/v1/search.php?key=${GEOCODE_API_KEY}&q=${city}&format=json`;
+
   if (!city) {
     res.status(500).send("sorry, some thing went wrong");
   }
@@ -39,33 +40,31 @@ function handleLocationrequest(req, res) {
   // const locationsRawData = require('./data/location.json');
 
   client.query(sqlQuery,safeValues).then(result=>{
+
     if (result.rows.length > 0) {
+
       console.log("this result from data base : ")
-      // lat = result.rows.latitude;
-      // lon = result.rows.longitude;
+     let lat = result.rows.latitude;
+     let lon = result.rows.longitude;
+      console.log(result);
       res.send(result.rows[0]);
+
   }else{
 
     superagent.get(url).then((resData) => {
       const location = new Location(city, resData.body[0]);
-      let SQL=`INSERT INTO locations(search_query, formatted_query, latitude, longitude)VALUES($1,$2,$3,$4)`;
+      let SQL=`INSERT INTO locations(search_query, formatted_query, latitude, longitude)VALUES($1,$2,$3,$4);`
         let Values = [location.search_query, location.formatted_query, location.latitude, location.longitude];
         client.query(SQL, Values).then(result => {
           console.log(result);
-
         });
+
       res.send(location);
+
     }).catch(() => {
       response.status(404).send("your search not found");
     });
   }})
- 
-
-
-
-
-
- 
 }
 
 // const  WeatherData = [];
