@@ -78,7 +78,7 @@ function handleLocationrequest(req, res) {
       res.send(location);
 
     }).catch(() => {
-      response.status(404).send("your search not found");
+      res.status(404).send("your search not found");
     });
   }})
 }
