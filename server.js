@@ -22,14 +22,14 @@ app.get("/location", handleLocationrequest);
 // app.get("/parks", handleParkrequest);
 
 
-const client = new pg.Client(DATABASE_URL);
+// const client = new pg.Client(DATABASE_URL);
 
-// const client = new pg.Client({
-//   connectionString: DATABASE_URL,
-//   ssl: {
-//     rejectUnauthorized: false
-//   }
-// });
+const client = new pg.Client({
+  connectionString: DATABASE_URL,
+  ssl: {
+    rejectUnauthorized: false
+  }
+});
 
 
 
