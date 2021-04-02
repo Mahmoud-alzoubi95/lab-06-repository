@@ -90,8 +90,8 @@ function Location(city, data) {
 
 function WeatherProp(element) {
 
-  this.description = element.weather.description;
-  this.date = element.valid_date;
+  this.forecast = element.weather.description;
+  this.time = element.datetime
 }
 
 app.use("*", (req, res) => {
