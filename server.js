@@ -40,8 +40,8 @@ function handleWeatherrequest(req, res) {
 
   const lat = req.query.latitude;
   const lon = req.query.longitude;
-
-  const url = `https://api.weatherbit.io/v2.0/current?lat=${lat}&lon=${lon}&key=${WEATHER_API_KEY}&include=minutely`;
+// const newurl = `https://api.weatherbit.io/v2.0/forecast/daily?lat=${lat}&lon=${lon}&key=${key}`
+  const url = `https://api.weatherbit.io/v2.0/forecast/daily?lat=${lat}&lon=${lon}&key=${WEATHER_API_KEY}`;
   // const WeatherRawData = require('./data/weather.json');
 
   superagent.get(url).then(resweath => {
@@ -59,7 +59,7 @@ function handleWeatherrequest(req, res) {
 
 function handleParkrequest(req, res) {
 
-  const parkUrl=`https://developer.nps.gov/api/v1/parks?city=${req.query.searchQuery1}&api_key=${PARKS_API_KEY}&limit=10`;
+  const parkUrl=`https://developer.nps.gov/api/v1/parks?city=${req.query.search_query}&api_key=${PARKS_API_KEY}&limit=10`;
 
   superagent.get(parkUrl).then(reqData => {
 
@@ -76,13 +76,13 @@ function handleParkrequest(req, res) {
 function NewPark(data) {
   this.name = data.name;
   this.address = `${data.addresses[0].line1} ${data.addresses[0].city} ${data.addresses[0].stateCode} ${data.addresses[0].postalCode}`;
-  this.fees ="0.00";
+  this.fee ="0.00";
   this.park_url = data.url;
 }
 
   
 function Location(city, data) {
-  this.searchQuery1 = city;
+  this.search_query = city;
   this.formatted_query = data.display_name;
   this.latitude = data.lat;
   this.longitude = data.lon;
