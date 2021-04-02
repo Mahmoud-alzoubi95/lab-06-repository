@@ -4,17 +4,22 @@ require("dotenv").config();
 
 const express = require("express");
 const superagent = require("superagent");
+const pg = require('pg');
 const cors = require("cors");
 const { response } = require("express");
 const PORT = process.env.PORT;
 const GEOCODE_API_KEY = process.env.GEOCODE_API_KEY;
+const DATABASE_URL = process.env.DATABASE_URL;
 const WEATHER_API_KEY = process.env.WEATHER_API_KEY;
 const PARKS_API_KEY = process.env.PARKS_API_KEY;
 const MOVIE_API_KEY = process.env.MOVIE_API_KEY;
 const YELP_API_KEY =process.env.YELP_API_KEY;
+const ENV = process.env.ENV || 'DEB';
+
 
 const app = express();
 app.use(cors());
+
 
 app.get("/location", handleLocationrequest);
 app.get("/weather", handleWeatherrequest);
@@ -22,21 +27,67 @@ app.get("/parks", handleParkrequest);
 app.get('/movies',handlemovies);
 app.get('/yelp',handleYelp);
 
+// app.get("/weather", handleWeatherrequest);
+// app.get("/parks", handleParkrequest);
+let client ='';
+if(ENV==='DIV'){
+  client = new pg.Client({connectionString: DATABASE_URL})
+}else{client = new pg.Client({
+    connectionString: DATABASE_URL,
+    ssl: {rejectUnauthorized: false}
+    })}
+// const client = new pg.Client(DATABASE_URL);
+
+// const client = new pg.Client({
+//   connectionString: DATABASE_URL,
+//   ssl: {
+//     rejectUnauthorized: false
+//   }
+// });
+
+
+
+
 function handleLocationrequest(req, res) {
+
   const city = req.query.city;
+
+  let safeValues=[city];
+  let sqlQuery=`SELECT * FROM locations WHERE search_query=$1;`
   const url = `https://eu1.locationiq.com/v1/search.php?key=${GEOCODE_API_KEY}&q=${city}&format=json`;
+
   if (!city) {
     res.status(500).send("sorry, some thing went wrong");
   }
   // console.log(city);
   // const locationsRawData = require('./data/location.json');
 
-  superagent.get(url).then((resData) => {
+  client.query(sqlQuery,safeValues).then(result=>{
+
+    if (result.rows.length > 0) {
+
+      console.log("this result from data base : ")
+     let lat = result.rows.latitude;
+     let lon = result.rows.longitude;
+      console.log(result);
+      res.send(result.rows[0]);
+
+  }else{
+
+    superagent.get(url).then((resData) => {
       const location = new Location(city, resData.body[0]);
+      let SQL=`INSERT INTO locations(search_query, formatted_query, latitude, longitude)VALUES($1,$2,$3,$4);`
+        let Values = [location.search_query, location.formatted_query, location.latitude, location.longitude];
+        client.query(SQL, Values).then(result => {
+          console.log(result);
+        });
+
       res.send(location);
+
     }).catch(() => {
-      response.status(404).send("your search not found");
+      res.status(404).send("your search not found");
     });
+  }})
 }
 
 // const  WeatherData = [];
@@ -45,8 +96,8 @@ function handleWeatherrequest(req, res) {
 
   const lat = req.query.latitude;
   const lon = req.query.longitude;
-
-  const url = `https://api.weatherbit.io/v2.0/current?lat=${lat}&lon=${lon}&key=${WEATHER_API_KEY}&include=minutely`;
+// const newurl = `https://api.weatherbit.io/v2.0/forecast/daily?lat=${lat}&lon=${lon}&key=${key}`
+  const url = `https://api.weatherbit.io/v2.0/forecast/daily?lat=${lat}&lon=${lon}&key=${WEATHER_API_KEY}`;
   // const WeatherRawData = require('./data/weather.json');
 
   superagent.get(url).then(resweath => {
@@ -64,7 +115,7 @@ function handleWeatherrequest(req, res) {
 
 function handleParkrequest(req, res) {
 
-  const parkUrl=`https://developer.nps.gov/api/v1/parks?city=${req.query.searchQuery1}&api_key=${PARKS_API_KEY}&limit=10`;
+  const parkUrl=`https://developer.nps.gov/api/v1/parks?city=${req.query.search_query}&api_key=${PARKS_API_KEY}&limit=10`;
 
   superagent.get(parkUrl).then(reqData => {
 
@@ -140,7 +191,7 @@ function Movies(data){
 function NewPark(data) {
   this.name = data.name;
   this.address = `${data.addresses[0].line1} ${data.addresses[0].city} ${data.addresses[0].stateCode} ${data.addresses[0].postalCode}`;
-  this.fees ="0.00";
+  this.fee ="0.00";
   this.park_url = data.url;
 }
 
@@ -154,14 +205,16 @@ function Location(city, data) {
 
 function WeatherProp(element) {
 
-  this.description = element.weather.description;
-  this.date = element.valid_date;
+  this.forecast = element.weather.description;
+  this.time = element.datetime
 }
 
 app.use("*", (req, res) => {
   res.send("some thing went wrong");
 });
 
-app.listen(PORT, () => {
-  console.log(`listening on ${PORT}`);
-});
+client.connect().then(() => {
+        app.listen(PORT, () => {
+         console.log(`Listining to PORT: ${PORT}`);
+        })
+    })
