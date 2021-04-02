@@ -101,6 +101,7 @@ function handlemovies(req,res){
 function handleYelp(req,res){
  
   let arrYelps=[];
+  let resArray='';
   let lat = req.query.latitude;
   let lon = req.query.longitude;
 const url =`https://api.yelp.com/v3/businesses/search?latitude=${lat}&longitude=${lon}`
@@ -108,8 +109,9 @@ superagent.get(url).set(`Authorization`,`Bearer${YELP_API_KEY}`).then(data=>{
   let yelpsData=data.body.businesses;
   yelpsData.forEach(element=>{
     arrYelps.push(new Yelps(element))
+    resArray=arrYelps.slice((page-1)*5,page*5);
   })
-  res.send(arrYelps);
+  res.send(resArray);
 }).catch((err)=> {
   console.log('ERROR IN movies API');
   console.log(err);
