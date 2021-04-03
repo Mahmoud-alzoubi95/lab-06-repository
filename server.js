@@ -29,13 +29,15 @@ app.get('/yelp',handleYelp);
 
 // app.get("/weather", handleWeatherrequest);
 // app.get("/parks", handleParkrequest);
+
 let client ='';
 if(ENV==='DIV'){
   client = new pg.Client({connectionString: DATABASE_URL})
 }else{client = new pg.Client({
     connectionString: DATABASE_URL,
     ssl: {rejectUnauthorized: false}
-    })}
+    })};
+
 // const client = new pg.Client(DATABASE_URL);
 
 // const client = new pg.Client({
@@ -66,7 +68,7 @@ function handleLocationrequest(req, res) {
 
     if (result.rows.length > 0) {
 
-      console.log("this result from data base : ")
+      console.log("this result from data base: ")
      let lat = result.rows.latitude;
      let lon = result.rows.longitude;
       console.log(result);
@@ -148,21 +150,22 @@ function handlemovies(req,res){
   });
 }
 
-
+// set(`Authorization`,`Bearer${YELP_API_KEY}`)
 function handleYelp(req,res){
  
   let arrYelps=[];
-  let resArray='';
+  // let resArray='';
   let lat = req.query.latitude;
   let lon = req.query.longitude;
-const url =`https://api.yelp.com/v3/businesses/search?latitude=${lat}&longitude=${lon}`
-superagent.get(url).set(`Authorization`,`Bearer${YELP_API_KEY}`).then(data=>{
+// const url =`https://api.yelp.com/v3/businesses/search?latitude=${lat}&longitude=${lon}`
+const url =`https://api.yelp.com/v3/businesses/search?key=${YELP_API_KEY}&location=${req.query.search_query}`
+superagent.get(url).then(data=>{
   let yelpsData=data.body.businesses;
   yelpsData.forEach(element=>{
     arrYelps.push(new Yelps(element))
-    resArray=arrYelps.slice((page-1)*5,page*5);
+    // resArray=arrYelps.slice((page-1)*5,page*5);
   })
-  res.send(resArray);
+  res.send(arrYelps);
 }).catch((err)=> {
   console.log('ERROR IN movies API');
   console.log(err);
