@@ -20,7 +20,7 @@ app.get("/location", handleLocationrequest);
 app.get("/weather", handleWeatherrequest);
 app.get("/parks", handleParkrequest);
 app.get('/movies',handlemovies);
-app.get('/yelp',handleYelpRequest);
+app.get('/yelp',handleYelp);
 
 function handleLocationrequest(req, res) {
   const city = req.query.city;
@@ -104,8 +104,7 @@ function handleYelp(req,res){
   // const searchQuery = req.query.search_query;
   let arrYelps=[];
   let resArray='';
-  let lat = req.query.latitude;
-  let lon = req.query.longitude;
+
 const url =`https://api.yelp.com/v3/businesses/search?latitude=${lat}&longitude=${lon}`
 superagent.get(url).set("Authorization",`Bearer${YELP_API_KEY}`).then(data=>{
   let yelpsData=data.body.businesses;
