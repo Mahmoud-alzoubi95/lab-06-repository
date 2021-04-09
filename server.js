@@ -98,25 +98,28 @@ function handlemovies(req,res){
 }
 
 
-function handleYelp(req,res){
- 
-  let arrYelps=[];
-  let resArray='';
-  let lat = req.query.latitude;
-  let lon = req.query.longitude;
-const url =`https://api.yelp.com/v3/businesses/search?latitude=${lat}&longitude=${lon}`
-superagent.get(url).set(`Authorization`,`Bearer${YELP_API_KEY}`).then(data=>{
-  let yelpsData=data.body.businesses;
-  yelpsData.forEach(element=>{
-    arrYelps.push(new Yelps(element))
-    resArray=arrYelps.slice((page-1)*5,page*5);
-  })
-  res.send(resArray);
-}).catch((err)=> {
-  console.log('ERROR IN movies API');
-  console.log(err);
-});
+
+function handleYelp (req, res) {
+  const searchQuery = req.query.search_query;
+  const yelpOffset = req.query.page * 5 - 5;
+
+  const url = `https://api.yelp.com/v3/businesses/search?term=restaurants&location=${searchQuery}&limit=5&offset=${yelpOffset}`;
+  // if (!searchQuery) { //for empty request
+  //   res.status(404).send('no search query was provided');
+  // }
+  superagent.get(url).set(`Authorization`, `Bearer ${YELP_API_KEY}`).then(resData => {
+    const yelpData = resData.body.businesses.map(business => {
+      return new Yelp(business);
+    });
+    res.status(200).send(yelpData);
+  }).catch(e => {
+    console.log('error', e);
+    res.status(500).send('WOOPSIE, no restaurants listed in this area!!!!');
+  });
 }
+
+
+
 
 function Yelps(data){
   this.name=data.name;
