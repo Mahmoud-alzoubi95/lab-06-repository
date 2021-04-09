@@ -160,15 +160,14 @@ function handleYelp (req, res) {
   // }
   superagent.get(url).set(`Authorization`, `Bearer ${YELP_API_KEY}`).then(resData => {
     const yelpData = resData.body.businesses.map(business => {
-      return new Yelp(business);
+      return new Yelps(business);
     });
     res.status(200).send(yelpData);
   }).catch(e => {
     console.log('error', e);
-    res.status(500).send('WOOPSIE, no restaurants listed in this area!!!!');
+    res.status(500).send('ERROR IN Yelp API');
   });
 }
-
 
 
 
